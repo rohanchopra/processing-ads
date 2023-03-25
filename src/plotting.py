@@ -8,5 +8,5 @@ def plot_data_loader(data_loader, gridDims):
     dataiter = iter(data_loader)
     for i in range(gridDims[0]):
         for j in range(gridDims[1]):
-            images, _ = dataiter.next()
-            axes[i, j].imshow(np.transpose(images[0].numpy(), (1, 2, 0)), cmap='gray')
+            images, _ = next(dataiter)
+            axes[i, j].imshow(np.transpose(images[0].numpy(), (1, 2, 0)))

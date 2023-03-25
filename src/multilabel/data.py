@@ -12,34 +12,34 @@ def load_data(path, batch_size, input_size, norm_arr,
     transform_dict = {"train": 
                           T.Compose([
                             #T.ToPILImage(),
-                            T.Resize(size=input_size),
+                            T.Resize(size=(input_size, input_size)),
 
                             T.RandomHorizontalFlip(),
                             #T.ColorJitter(contrast=0.5),
-                            T.RandomAdjustSharpness(2),
-                            T.RandomAutocontrast(),
+                            #T.RandomAdjustSharpness(2),
+                            #T.RandomAutocontrast(),
 
                             T.ToTensor(),
                             T.Normalize(*norm_arr)]),
                         "test_val": 
                           T.Compose([
                             #T.ToPILImage(),
-                            T.Resize(size=input_size),
+                            T.Resize(size=(input_size, input_size)),
                             T.ToTensor(),
                             T.Normalize(*norm_arr)])
                         }
     
-    train = pd.read_csv(os.path.join(path, "train.csv")).drop(['FilePath', 'Patient ID'], axis=1).set_index('Image Index')
-    test = pd.read_csv(os.path.join(path, "test.csv")).drop(['FilePath', 'Patient ID'], axis=1).set_index('Image Index')
-    val = pd.read_csv(os.path.join(path, "val.csv")).drop(['FilePath', 'Patient ID'], axis=1).set_index('Image Index')
+    train = pd.read_csv(os.path.join(path, "train.csv")).set_index('Path')
+    test = pd.read_csv(os.path.join(path, "test.csv")).set_index('Path')
+    val = pd.read_csv(os.path.join(path, "val.csv")).set_index('Path')
     
-    train_dataset = MultiLabelDataset(root=os.path.join(path, "train"),
+    train_dataset = MultiLabelDataset(root=os.path.join(path, "images", "train"),
                                          dataframe=train,
                                          transform=transform_dict["train"])
-    val_dataset = MultiLabelDataset(root=os.path.join(path, "val"),
+    val_dataset = MultiLabelDataset(root=os.path.join(path, "images", "val"),
                                        dataframe=val,
                                        transform=transform_dict["test_val"])
-    test_dataset = MultiLabelDataset(root=os.path.join(path, "test"),
+    test_dataset = MultiLabelDataset(root=os.path.join(path, "images", "test"),
                                         dataframe=test,
                                         transform=transform_dict["test_val"])
     
