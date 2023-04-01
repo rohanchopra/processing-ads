@@ -29,9 +29,9 @@ def load_data(path, batch_size, input_size, norm_arr,
                             T.Normalize(*norm_arr)])
                         }
     
-    train = pd.read_csv(os.path.join(path, "train.csv")).set_index('Path')
-    test = pd.read_csv(os.path.join(path, "test.csv")).set_index('Path')
-    val = pd.read_csv(os.path.join(path, "val.csv")).set_index('Path')
+    train = pd.read_csv(os.path.join(path, "train.csv")).set_index('Path').fillna(0)
+    test = pd.read_csv(os.path.join(path, "test.csv")).set_index('Path').fillna(0)
+    val = pd.read_csv(os.path.join(path, "val.csv")).set_index('Path').fillna(0)
     
     train_dataset = MultiLabelDataset(root=os.path.join(path, "images", "train"),
                                          dataframe=train,
