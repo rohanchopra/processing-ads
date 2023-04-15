@@ -119,7 +119,7 @@ def train_model(
 
                 if (i) % 100 == 0:
                     print(
-                        f"Epoch [{epoch + 1}/{num_epochs}], Step [{i}/{total_steps}], Loss: {curr_loss:.4f}, Accuracy: {curr_acc/preds.shape[1]:.2f}%"
+                        f"Epoch [{epoch + 1}/{num_epochs}], Step [{i}/{total_steps}], Loss: {curr_loss:.4f}, Accuracy: {100*curr_acc/(preds.shape[1]*preds.shape[0]):.2f}%"
                     )
 
             with torch.no_grad():
@@ -129,7 +129,7 @@ def train_model(
                 )
 
                 print(
-                    "{} Loss: {:.4f} Acc: {:.4f}".format(phase, epoch_loss, epoch_acc)
+                    "{} Loss: {:.4f} Acc: {:.2f}%".format(phase, epoch_loss, 100*epoch_acc)
                 )
 
                 # Deep copy the best performing model.
