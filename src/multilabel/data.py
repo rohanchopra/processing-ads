@@ -10,19 +10,18 @@ def load_data(path, batch_size, input_size, norm_arr, num_workers=0):
     transform_dict = {
         "train": T.Compose(
             [
-                # T.ToPILImage(),
                 T.Resize(size=(input_size, input_size)),
                 T.RandomHorizontalFlip(),
-                # T.ColorJitter(contrast=0.5),
-                # T.RandomAdjustSharpness(2),
-                # T.RandomAutocontrast(),
+                T.RandomRotation(30),
+                T.RandomAdjustSharpness(sharpness_factor=2),
+                T.RandomAutocontrast(p=0.5),
                 T.ToTensor(),
+                T.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
                 T.Normalize(*norm_arr),
             ]
         ),
         "test_val": T.Compose(
             [
-                # T.ToPILImage(),
                 T.Resize(size=(input_size, input_size)),
                 T.ToTensor(),
                 T.Normalize(*norm_arr),
