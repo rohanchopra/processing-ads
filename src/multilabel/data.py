@@ -35,17 +35,17 @@ def load_data(path, batch_size, input_size, norm_arr, num_workers=0):
     val = pd.read_csv(os.path.join(path, "val.csv")).set_index("Path").fillna(0).astype(bool).astype(int)
 
     train_dataset = MultiLabelDataset(
-        root=os.path.join(path, "images", "train"),
+        root=os.path.join(path, "pre_proc_images", "train"),
         dataframe=train,
         transform=transform_dict["train"],
     )
     val_dataset = MultiLabelDataset(
-        root=os.path.join(path, "images", "val"),
+        root=os.path.join(path, "pre_proc_images", "val"),
         dataframe=val,
         transform=transform_dict["test_val"],
     )
     test_dataset = MultiLabelDataset(
-        root=os.path.join(path, "images", "test"),
+        root=os.path.join(path, "pre_proc_images", "test"),
         dataframe=test,
         transform=transform_dict["test_val"],
     )
