@@ -148,7 +148,19 @@ In the images below, data augmentation has been visualized using RandomHorizonta
     \includegraphics[width=9cm, height=9cm, keepaspectratio]{figures/RandomAdjustSharpness.eps} 
     \caption{Data Augmentation using RandomAdjustSharpness} 
     \label{fig} 
-    \end{figure}    
+    \end{figure}
+    
+\subsection{Backbone Architectures}
+Various configuration and blocks were chosen to ensure that different ideas are tested in this study. Other selection criteria were the number of trainable parameters, important to keep track of the total training time, FLOPS as models that could easily be deployed on to embedded
+devices were required and the top 5 classification accuracy on the ImageNet 1K benchmark dataset.
+
+\textbf{ResNet 34} residual learning network with 34 layers that are made possible by skip connections. The 34 layer variant was chosen to decrease training time while not compromising on the accuracy much. This
+architecture had the highest trainable parameters and FLOPS while the lowest Imagenet accuracy \cite{b18}.
+
+\textbf{MobileNet} V3 Large uses depthwise separable convolution from MobileNet V2 along with squeezeexcitation blocks in residual layers from MnasNet. This makes it really quick to train while still performing at
+par with other architectures. This architecture had the lowest trainable parameters and FLOPS among the three selected. Howard et al. \cite{b19} also used network architecture search to find the most effective model. The large configuration was chosen to not compromise on the prediction accuracy.
+
+\textbf{EfficientNet B1} uses compound scaling to scale the model by depth, width and resolution. The B1 version was chosen to have faster training without compromising on the accuracy. \cite{b20} This architecture performs the best among the selected on the Imagenet benchmark dataset while having a third of the trainable parameters of Resnet34.
 
 \begin{thebibliography}{00}
 \bibitem{b1} https://www.oberlo.com/statistics/facebook-ad-revenue
@@ -184,6 +196,12 @@ In the images below, data augmentation has been visualized using RandomHorizonta
 \bibitem{b16} https://www.willgibbons.com/color-banding/
 
 \bibitem{b17} https://pytorch.org/vision/stable/transforms.html
+
+\bibitem{b18} He, Kaiming, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. "Deep residual learning for image recognition." In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 770-778. 2016.
+
+\bibitem{b19} Howard, Andrew, Mark Sandler, Grace Chu, Liang-Chieh Chen, Bo Chen, Mingxing Tan, Weijun Wang et al. "Searching for mobilenetv3." In Proceedings of the IEEE/CVF international conference on computer vision, pp. 1314-1324. 2019.
+
+\bibitem{b20} Tan, Mingxing, and Quoc Le. "Efficientnet: Rethinking model scaling for convolutional neural networks." In International conference on machine learning, pp. 6105-6114. PMLR, 2019.
 
 \end{thebibliography}
 
