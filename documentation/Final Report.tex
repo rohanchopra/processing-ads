@@ -72,12 +72,6 @@ separate text file. Complete all content and organizational editing before
 formatting. Please note sections \ref{AA} below for more information on 
 proofreading, spelling and grammar.
 
-\subsection{Abbreviations and Acronyms}\label{AA}
-Define abbreviations and acronyms the first time they are used in the text, 
-even after they have been defined in the abstract. Abbreviations such as 
-IEEE, SI, MKS, CGS, ac, dc, and rms do not have to be defined. Do not use 
-abbreviations in the title or heads unless they are unavoidable.
-
 \begin{figure}[htbp]
 \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/dataset.eps}
 \caption{Sentiment Label Distribution}
@@ -91,29 +85,70 @@ Before training, the images have to processed for denoising and their quality im
 \subsection{Bilateral Filter}
 For improving the quality of the images, a bilateral filter was used. A smoothing filter for images, is used to reduce noise while preserving edges in a non-linear manner. This filter works by calculating a weighted average of intensity values from surrounding pixels to replace the intensity of each pixel. The weight of each pixel is determined using a Gaussian distribution and it preserves sharp edges. The weights used in the filter are not solely based on the distance between pixels, but also take into consideration differences in radiometric properties such as color intensity and depth distance \cite{b15}.
 
-% \begin{figure}[htp]
-% \includegraphics[width=9cm, height=15cm, keepaspectratio]{figures/ads_bilateral.png}
-% \caption{Bilateral }
-% \label{fig}
-% \end{figure}
+\begin{figure}[htp]
+\includegraphics[width=9cm, height=11cm, keepaspectratio]{figures/ads_bilateral.eps}
+\caption{Bilateral Filter applied on Ads }
+\label{fig}
+\end{figure}
 
 As shown in fig 2, a bilateral filter is controlled by three parameters sigma(s), responsible for spatial region which smooths larger surfaces as we increase the spatial parameter, sigma(r) which tends to act like a Gaussian filter when it increases as the Gaussian range widens and d, which is the diameter of each pixel neighbourhood. It is quintessential to know that all other filters smudge the edges, while Bilateral Filtering retains them. When weights are multiplied together and if one of the weights is close to zero, no smoothing occurs. This can be demonstrated by using a large spatial Gaussian with a narrow range Gaussian, which results in limited smoothing despite the filter having a large spatial extent. The range weight ensures that the edges are preserved.
 
 After applying different values d, sigma(s) and sigma(r), it was determined that the pixel diameter of 9 along with sigma(s) and sigma(r) being 9 as well gave the best results. Following that, bilateral filters have been applied twice merely because of the fact that applying bilateral filters in iterations enhanced picture quality even more. The image below depicts a significant change than the previous image i.e. the original image where the color banding or posterization, an ugly artifact that can be seen in digital images, has been notably reduced \cite{b16} and the final image is better than previous one. Another remarkable change was also witnessed which relates to compression artifacts, a distortion of media in images which is caused by lossy compression of media was removed  in the final image corroborating the efforts. 
 
 \subsection{Pre-processing Techniques}
-Pytorch provides various functional transformations that can be applied using the torchvision.transform module. They accept both PIL images and tensor images, although some transformations are PIL-only and some are tensor-only \cite{17}. As these transformations require a parameter such as a factor by which an image can be transformed, therefore they cannot be applied to all images owing to the factor that all images are different. 
+Pytorch provides various functional transformations that can be applied using the torchvision.transform module. They accept both PIL images and tensor images, although some transformations are PIL-only and some are tensor-only \cite{17}. As these transformations require a parameter such as a factor by which an image can be transformed, therefore they cannot be applied to all images owing to the factor that all images are different.
 
-For example, a Hue transform that accepts an image along with a parameter, hue\_factor that ranges from [-0.5 to 0.5]. 0.5 and -0.5 give complete reversal of the hue channel in HSV space in positive and negative direction respectively whereas 0 means no shift. The same level factor cannot be expected from other techniques such as sharpness or contrast etc. Hence, this parameter cannot be kept constant for all images as it will have a variable effect or appeal on different images. In the fig below, five random images have been selected and functional image processing techniques like hue transforms, gamma transforms, solarize transformations, sharpness etc have been applied to reach a conclusion that all images bearing unique in their characteristics respond differently to functional transformations applied. 
+\begin{figure}[htbp]
+    \includegraphics[width=9cm, height=9cm, keepaspectratio]{figures/preprocessing_plots.eps}
+    \caption{Pytorch Preprocessing Techniques}
+    \label{fig}
+    \end{figure}
+
+For example, a Hue transform that accepts an image along with a parameter, hue\_factor that ranges from [-0.5 to 0.5]. 0.5 and -0.5 give complete reversal of the hue channel in HSV space in positive and negative direction respectively whereas 0 means no shift. The same level factor cannot be expected from other techniques such as sharpness or contrast etc. Hence, this parameter cannot be kept constant for all images as it will have a variable effect or appeal on different images. In the fig below, five random images have been selected and functional image processing techniques like hue transforms, gamma transforms, solarize transformations, sharpness etc have been applied to reach a conclusion that all images bearing unique in their characteristics respond differently to functional transformations applied.
 
 Even though brightness and contrast change show a potent outcome, a specific parameter cannot be kept for all images which points this approach to be handled in data augmentation where functions like AutoContrast and AutoBrightness have been applied. Histogram equalization, a popular technique for improving the contrast of the images visibly failed to work for colored images. This technique was employed on a colored image which visibly distorted colors and features such that it could not be considred as a viable pre-prcessing technique.
+
+\begin{figure}[htbp] 
+    \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/histogram_equalize.eps} 
+    \caption{Histogram Equalization on Colored Image} 
+    \label{fig} 
+    \end{figure}
 
 Some details about an image comparison between image 1 and image 2…..such that we are able to substantiate our findings.
 
 \subsection{Data Augmentations Techniques}
 Data augmentation plays a crucial role in completing the training requirements for deep learning models as these models aren’t able to converge the network to an optimal solution using some gradient based optimization algorithm. The huge number of parameters needed to be tuned by the learning algorithm require enormous amounts of data merely because of the fact that the deep learning algorithms start off with a poor initial state where weights are completely random. There are various ways to augment data using pytorch library such as RandomHorizontalFlip, RandomAdjustSharpness etc that produce images with any random factor for creating possible image outputs that may be a possible scenario in the real world for understanding the variability in the image dataset. 
-In the image below, data augmentation has been visualized using RandomHorizontalFlip, RandomRotation to a certain degree, RandomAdjustSharpness with sharpness factor as 2,  RandomAutocontrast with factor as 5, and lastly RandomColorJitter.
+In the images below, data augmentation has been visualized using RandomHorizontalFlip, RandomRotation to a certain degree, RandomAdjustSharpness with sharpness factor as 2,  RandomAutocontrast with factor as 5, and lastly RandomColorJitter.
 
+\begin{figure}[htbp] 
+    \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/RandomHorizontalFlip.eps} 
+    \caption{Data Augmentation using RandomHorizontalFlip} 
+    \label{fig} 
+    \end{figure}
+
+\begin{figure}[htbp] 
+    \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/RandomRotation30.eps} 
+    \caption{Data Augmentation using RandomRotation at 30 degrees} 
+    \label{fig} 
+    \end{figure}
+
+\begin{figure}[htbp] 
+    \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/RandomAdjustSharpness.eps} 
+    \caption{Data Augmentation using RandomAdjustSharpness} 
+    \label{fig} 
+    \end{figure}
+
+\begin{figure}[htbp] 
+    \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/RandomAutocontrast.eps} 
+    \caption{Data Augmentation using RandomAutocontrast} 
+    \label{fig} 
+    \end{figure}
+
+\begin{figure}[htbp] 
+    \includegraphics[width=9cm, height=10cm, keepaspectratio]{figures/ColorJitter.eps} 
+    \caption{Data Augmentation using ColorJitter} 
+    \label{fig} 
+    \end{figure}
 
 \begin{thebibliography}{00}
 \bibitem{b1} https://www.oberlo.com/statistics/facebook-ad-revenue
