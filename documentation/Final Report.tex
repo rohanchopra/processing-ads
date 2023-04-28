@@ -5,7 +5,7 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
-\usepackage[utf8x]{inputenc} 
+%\usepackage[utf8x]{inputenc} 
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{mathtools}
@@ -150,17 +150,164 @@ In the images below, data augmentation has been visualized using RandomHorizonta
     \label{fig} 
     \end{figure}
     
-\subsection{Backbone Architectures}
-Various configuration and blocks were chosen to ensure that different ideas are tested in this study. Other selection criteria were the number of trainable parameters, important to keep track of the total training time, FLOPS as models that could easily be deployed on to embedded
-devices were required and the top 5 classification accuracy on the ImageNet 1K benchmark dataset.
 
-\textbf{ResNet 34} residual learning network with 34 layers that are made possible by skip connections. The 34 layer variant was chosen to decrease training time while not compromising on the accuracy much. This
-architecture had the highest trainable parameters and FLOPS while the lowest Imagenet accuracy \cite{b18}.
 
-\textbf{MobileNet} V3 Large uses depthwise separable convolution from MobileNet V2 along with squeezeexcitation blocks in residual layers from MnasNet. This makes it really quick to train while still performing at
-par with other architectures. This architecture had the lowest trainable parameters and FLOPS among the three selected. Howard et al. \cite{b19} also used network architecture search to find the most effective model. The large configuration was chosen to not compromise on the prediction accuracy.
+\subsection{Model Architectures} (\ref{tab:selArch})
+Different backbone architectures were chosen to ensure that different types of 
+Convolution blocks were tested for the advertisement data. Other selection criteria included
+ the \textit{number of parameters} and \textit{GFLOPS}, important to keep track of the total training and evaluation time, 
+ and the \textit{top 5 classification accuracy} on the ImageNet 1K benchmark dataset. Finally, the following three
+ backbone architectures were chosen:
 
-\textbf{EfficientNet B1} uses compound scaling to scale the model by depth, width and resolution. The B1 version was chosen to have faster training without compromising on the accuracy. \cite{b20} This architecture performs the best among the selected on the Imagenet benchmark dataset while having a third of the trainable parameters of Resnet34.
+ \begin{table}[htbp]
+    \caption{Shortlisted Backbone Architectures.}
+    \centering
+    \begin{tabular}{p{1.5cm}|p{1cm}|p{1cm}|p{1.2cm}|p{1cm}}
+    %\toprule
+    \hline
+    Arch. & Params (Mil.) & Layers & GFLOPS & Imagenet Acc.\\
+    %\midrule
+    \hline
+    MobileNet V3 Large & 5.5 & 18 & 0.22 & 92.57\\
+    %\midrule
+    \hline
+    EfficientNet B3 & 12.2 & 29 & 1.83 & 96.05\\
+    %\midrule
+    \hline
+    Resnet 50 & 25.6 & 50 & 4.09 & 95.43\\
+    %\bottomrule
+    \hline
+    \end{tabular}
+    %\vspace{-1.5em}
+    \label{tab:selArch}
+  \end{table}
+
+\textbf{ResNet 50}: A residual learning CNN with 50 layers that 
+are made possible by skip connections. Without these skip 
+connections, training such a deep network is not possible due 
+to the vanishing gradient problem. The 50 layer variant was 
+chosen to decrease training time while not compromising on the 
+accuracy. This architecture had the highest trainable parameters,
+ FLOPS and number of layers \cite{b18}.
+
+\textbf{MobileNet V3 Large}: This model uses depthwise separable convolution 
+from MobileNet V2 along with squeezeexcitation blocks in residual layers 
+from MnasNet. This makes it really quick to train while still performing at
+par with other architectures. This architecture had the lowest trainable 
+parameters and FLOPS among the three selected. Howard et al. \cite{b19} 
+also used network architecture search to find the most effective model. 
+The large configuration was chosen to not compromise on the prediction accuracy.
+
+\textbf{EfficientNet B3}: This model uses compound scaling to scale the model by 
+depth, width and resolution. The B3 version was chosen to have faster training 
+without compromising on the accuracy. \cite{b20} This architecture performs the 
+best among the selected on the Imagenet benchmark dataset while having half 
+ the trainable parameters of Resnet50.
+
+
+ \subsection{Optimization Algorithm}
+ The Adam optimizer \cite{kingma2014adam} is an adaptive learning rate optimization 
+ algorithm which was chosen as the optimizer for this study as it converges faster 
+ by integrating benefits of the RMSProp algorithm and momentum technique. It is also 
+ robust to hyperparameters but, requires tweaking of the learning rate depending on 
+ the task at hand. For this study, a learning rate of 0.01 and the original author 
+ recommend settings for $\beta_{1} = 0.9$, $\beta_{2} = 0.999$ and 
+ $\epsilon = 10^{-8}$ were used for the first and second order moment estimate 
+ as defined in \eqref{eq:adam1} and \eqref{eq:adam2} where $\beta_{1}$ and 
+ $\beta_{2}$ control the decay rates.
+ \begin{equation}
+ m_{t} = \beta_{1} \cdot m_{t-1} + (1 - \beta_{1}) \cdot g_{t}
+ \label{eq:adam1}
+ \end{equation}
+ \begin{equation}
+   v_{t} = \beta_{2} \cdot v_{t-1} + (1 - \beta_{2}) \cdot g_{t}^{2}
+   \label{eq:adam2}
+   \end{equation}
+ Further, the Cosine annealing \cite{loshchilov2016sgdr} learning rate scheduler was used 
+ to reduce the learning rate as the training progressed down to an end point of 0.001. This 
+ would help us reduce the learning rate as training progressed, preventing us from overshooting 
+ the minima.
+
+\section{Results} 
+\label{sec:result}
+\subsection{Experiment Setup}
+
+First, training data with labels that were low in count were removed as described in \ref{sec:prop_method}. 
+Then, the advertisement images were pre-processed using the bilateral filter described in 
+\ref{sec:prop_method} before resizing them to the size - 384 * 384. The data was split into train, test and 
+validation set in the 0.6:0.2:0.2 ratio and was stored in separate directories according to the defined PyTorch 
+dataloader. Then, the mean and standard deviation of the dataset was calculated using the training dataset. 
+All images were normalized before training using the dataloader with this calculated 
+mean and standard deviation.
+The dataset used in this study presented the the multiclass, multilabel classification problem. 
+Thus, to make the model predict multiple labels, a sigmoid layer had to be added before the 
+loss function to get 0 or 1 prediction for all the classes of the data. To achieve this, the 
+BCEWITHLOGITSLOSS function of PyTorch was used as it combines the Sigmoid layer and the 
+binary cross entropy loss function in one single class. This makes 
+theses operations more numerically stable than their separate counterparts \cite{bcelogits_}.
+The backbone architectures and their pre-trained weights were obtained directly from the 
+torchvision library and the final classification layer was modified for our dataset of 20 classes. 
+The pre-trained weights were chosen to be the IMAGENET1K\_V2 weights and only the last 
+classification layer was fine-tuned. The rationale behind performing this type of 
+shallow-tuning was that the Imagenet data is very similar to the advertisement images in our 
+dataset. Additionally, the size of the selected dataset is small so deep-tuning might not work well. 
+
+The batch size was fixed to 32 for all the models. While training, the best model by 
+validation loss was saved to prevent the usage of overfit models for the test set analysis. 
+The actual and predicted results from each epoch was also stored to calculate the F1 scores at 
+each step of training. While calculating the F1 score, macro averaging 
+was used to get an average score across classes. 
+
+Initial training runs of the multilabel data produced a zero F1 score due to its highly imbalanced 
+nature. To mitigate this, class wise weights were calculated and used with the loss function. 
+This improved the F1 score quite considerably.
+
+
+
+
+    \begin{table}[htbp]
+        \caption{F1 (higher is better), time per epoch in seconds (lower is better), and number of epochs to reach the best validation loss (lower is better) for the 3 models that were trained.}
+        \centering
+        \boldmath
+        \begin{tabular}{p{2cm}|p{1cm}|p{1cm}|p{1.2cm}|p{1cm}}
+        %\toprule
+        \hline
+        Model & \emph{F1} & \emph{Time} & \emph{Epochs}\\
+        %\midrule
+        \hline
+        MobileNet V3 Large & 0.168 & \textbf{80s} & abc\\
+        %\midrule
+        \hline
+        EfficientNet B3 & \textbf{0.189} & 153s & abc\\
+        %\midrule
+        \hline
+        Resnet 50 & 0.179 & 89s & abc\\
+        %\bottomrule
+        \hline
+        \end{tabular}
+        %\vspace{-1.5em}
+        \label{tab:test_metrics}
+      \end{table}
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/metrics.eps}  
+     \caption{Training \& Validation, F1 \& Loss plots for the three models.}
+     %\vspace{-1em}
+     \label{fig:acc_loss}
+  \end{figure}
+
+
+Finally, the best models from each of the three training runs validation loss were used 
+to get the test set metrics that are displayed in \ref{table:test_metrics}. 
+Per epoch training and validation F1 score and loss are provided in 
+Fig.~\ref{fig:acc_loss}.
+
+\subsection{Training Results}
+
+
+
 
 \begin{thebibliography}{00}
 \bibitem{b1} https://www.oberlo.com/statistics/facebook-ad-revenue
