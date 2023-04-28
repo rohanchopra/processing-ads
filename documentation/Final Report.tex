@@ -5,10 +5,12 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
-%\usepackage[utf8x]{inputenc} 
+\usepackage[utf8x]{inputenc} 
+\usepackage[OT1]{fontenc} 
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{mathtools}
+\usepackage{subfig}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -265,29 +267,6 @@ This improved the F1 score quite considerably.
 
 
 
-    \begin{table}[htbp]
-        \caption{F1 (higher is better), time per epoch in seconds (lower is better), and number of epochs to reach the best validation loss (lower is better) for the 3 models that were trained.}
-        \centering
-        \boldmath
-        \begin{tabular}{p{2cm}|p{1cm}|p{1cm}|p{1.2cm}|p{1cm}}
-        %\toprule
-        \hline
-        Model & \emph{F1} & \emph{Time} & \emph{Epochs}\\
-        %\midrule
-        \hline
-        MobileNet V3 Large & 0.168 & \textbf{80s} & abc\\
-        %\midrule
-        \hline
-        EfficientNet B3 & \textbf{0.189} & 153s & abc\\
-        %\midrule
-        \hline
-        Resnet 50 & 0.179 & 89s & abc\\
-        %\bottomrule
-        \hline
-        \end{tabular}
-        %\vspace{-1.5em}
-        \label{tab:test_metrics}
-      \end{table}
 
 
 \begin{figure}[htbp]
@@ -305,6 +284,165 @@ Per epoch training and validation F1 score and loss are provided in
 Fig.~\ref{fig:acc_loss}.
 
 \subsection{Training Results}
+From \ref{fig:acc_loss} it is clear that going from a smaller 
+architecture to a bigger architecture, makes the model start to overfit earlier. 
+The MobileNet model took the most number of epochs to reach 
+the minima. The EfficientNet model performs the best for our dataset. However, 
+all three models performed poorly. This shows that the compound scaling 
+of EfficientNet gives good results for the advertisement dataset.
+The reason for poor performance overall could be due to a number of reasons. 
+The had a high number of classes but the number of examples per class was very low.
+Moreover, there was a high class imbalance problem. After looking at the images and 
+the labels more closely, it was noticed that many images were poorly labeled and the 
+labels contained quite a few synonyms. 
+
+
+\begin{table}[htbp]
+    \caption{F1 (higher is better), time per epoch in seconds (lower is better), and number of epochs to reach the best validation loss and F1 (lower is better) for the 3 models that were trained.}
+    \centering
+    \boldmath
+    \begin{tabular}{p{2cm}|p{1cm}|p{1cm}|p{1.2cm}|p{1cm}}
+    %\toprule
+    \hline
+    Model & \emph{F1} & \emph{Time} & \emph{F1 Epochs} & \emph{Loss Epochs}\\
+    %\midrule
+    \hline
+    MobileNet V3 Large & 0.168 & \textbf{80s} & 50 & 98\\
+    %\midrule
+    \hline
+    EfficientNet B3 & \textbf{0.189} & 153s & \textbf{5} & 90\\
+    %\midrule
+    \hline
+    Resnet 50 & 0.179 & 89s & 10 & \textbf{0}\\
+    %\bottomrule
+    \hline
+    \end{tabular}
+    %\vspace{-1.5em}
+    \label{tab:test_metrics}
+    \end{table}
+
+Looking at \ref{tab:test_metrics} it can be seen that the MobileNet architecture was 
+the fastest to train per epoch. It took less time per epoch but, if number of 
+epochs required to converge is considered, it does not train the fastest.
+The lowest validation set loss for ResNet was at epoch 0. This means that the model 
+started overfitting right after the first epoch in terms of the loss. However, it took 
+10 epochs to converge on the F1 score.  
+EfficientNet model performed the best in terms of the overall F1 score on the test set.
+Another surprising observation is that the EfficientNet model takes the longest to 
+train per epoch even though the number of trainable parameters is nowhere close to ResNet. 
+Also, MobileNet isn't as fast to train as expected when compared to ResNet even though 
+it has five times the learnable 
+paramenters. This could be due to two reasons, 1. depthwise convolutions are not 
+optimized in the version of PyTorch and CUDA used and 2. training is getting CPU bound 
+due to the data augmentation before each training run which 
+would take the same amount of time for all the models. 
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/efficientnet_cm.eps}  
+     \caption{Confusion Matrix for the EfficientNet model.}
+     %\vspace{-1em}
+     \label{fig:conf}
+  \end{figure}
+
+In Fig.~\ref{fig:conf} it can be seen that the model classifies the labels 
+Fashionable, Feminine, and Eager the best which are the classes that have 
+the most number of training examples. This shows that if we increase the 
+training dataset size, the models could improve a lot.
+
+
+\begin{figure}
+    
+    \subfloat[First Layer Activations]{\includegraphics[width = 1\linewidth]{figures/1_Layer_first.eps}}\\
+    \subfloat[Middle Layer Activations]{\includegraphics[width = 1\linewidth]{figures/1_Layer_middle.eps}}\\
+    \subfloat[Last layer Activations]{\includegraphics[width = 1\linewidth]{figures/1_Layer_last.eps}}
+    \caption{GradCAM visualization for an Advertisement using the Efficientnet Model. Actual label - Eager}
+    \label{fig:gradcam_1}
+  \end{figure}
+
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\linewidth]{figures/first_layer_filters.eps}  
+     \caption{Filters of the first layer.}
+     %\vspace{-1em}
+     \label{fig:filters}
+  \end{figure}
+
+
+
+As the EfficientNet B3 model produced the best F1 score on the test set, it was used 
+to generate the GradCAM visualizations to understand the model output. 
+In Fig.~\ref{fig:gradcam_1} we can see that in the first layer of the network the model 
+identifies prominent edges of the image. We can confirm this by looking at the filters of the 
+first layer in Fig.~\ref{fig:filters}. Most of the filters look like they identify edges 
+and corners. In the middle layer of the network, the model is looking at many different features 
+but isn't looking at the most relavant features for that label. On the other hand, in the 
+final layer of the network, the model looks only at the relavant features of the image 
+depending on the current label. For example, here it is focusing on the player playing football
+for the 'Active' label. 
+
+\begin{figure}
+    
+    \subfloat[First Layer Activations]{\includegraphics[width = 1\linewidth]{figures/2_Layer_first.eps}}\\
+    \subfloat[Middle Layer Activations]{\includegraphics[width = 1\linewidth]{figures/2_Layer_middle.eps}}\\
+    \subfloat[Last layer Activations]{\includegraphics[width = 1\linewidth]{figures/2_Layer_last.eps}}
+    \caption{GradCAM visualization for an Advertisement using the Efficientnet Model. Actual label - Fashionable, Feminine, Persuaded}
+    \label{fig:gradcam_2}
+  \end{figure}
+
+In Fig.~\ref{fig:gradcam_2}, the model focuses on the picture of the 
+woman for the 'Feminine', 'Fashionable' and 'Cheerful' labels.
+
+\begin{figure}
+    
+    \subfloat[First Layer Activations]{\includegraphics[width = 1\linewidth]{figures/9_Layer_first.eps}}\\
+    \subfloat[Middle Layer Activations]{\includegraphics[width = 1\linewidth]{figures/9_Layer_middle.eps}}\\
+    \subfloat[Last layer Activations]{\includegraphics[width = 1\linewidth]{figures/9_Layer_last.eps}}
+    \caption{GradCAM visualization for an Advertisement using the Efficientnet Model. Actual label - Persuaded}
+    \label{fig:gradcam_9}
+  \end{figure}
+
+In Fig.~\ref{fig:gradcam_9} we can 
+see that the model correctly looked at the text 'Free' and classified the image as Thrifty 
+however the actual label of persuaded was also in the top 4 predictions. This shows us that 
+the model performs much better if we look at the images and generated outputs. The labels 
+of the selected dataset are not completely correct making it difficult to evaluate the 
+actual performance of the models. Visually looking at the gradcam visualizations and the 
+predictions it is clear that the model is performing much better than what the F1 scores show.
+
+\begin{figure}
+    
+    \subfloat[First Layer Activations]{\includegraphics[width = 1\linewidth]{figures/7_Layer_first.eps}}\\
+    \subfloat[Middle Layer Activations]{\includegraphics[width = 1\linewidth]{figures/7_Layer_middle.eps}}\\
+    \subfloat[Last layer Activations]{\includegraphics[width = 1\linewidth]{figures/7_Layer_last.eps}}
+    \caption{GradCAM visualization for an Advertisement using the Efficientnet Model. Actual label - Creative}
+    \label{fig:gradcam_7}
+  \end{figure}
+
+
+\section{Conclusion}
+
+Understanding how humans perceive image advertisements could help improve 
+the quality of these advertisements. Training a neural network model 
+to predict the emaotions felt by humans towards different images is easy 
+buy collecting the data is much more difficult. The low performance of 
+the models in this study can be attributed to the low quality of the labels 
+along with a lack of available training data. Even though the convolutional 
+ layers of the EfficientNet model were not fine-tuned, it was observed that 
+ the model could find relavant features in the image depending on the label. 
+ This shows that transfer learning is a powerful tool to train models and 
+ reduce turn around times. Transfer learning enables the use of deep learning models 
+ even when the amount of available data is very less. 
+ 
+ To improve the performance of the models, a number of things can be tried. 
+ Improving the labels of the available dataset can improve the models 
+ quite a bit. Additionally, getting more data would help the training effort 
+ by allowing the models to find patterns better. A long text description 
+ of how people feel when looking at different images could be an interesting 
+ take on this problem. Later, this text could be pre-processed using NLP 
+ models to create labels.
+
 
 
 
