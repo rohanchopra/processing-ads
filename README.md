@@ -1,7 +1,10 @@
+
 # Processing ADs
+Promotion of products is now a common practice and is heavily controlled by broadcasting of advertisements. It is painstakingly difficult to personalize the content search by understanding the sentiments behind these image advertisements. It is proven that an image can be perceived in different manners and hence different emotions can be conveyed via them. This study tries to compare three backbone deep learning architectures on an advertisements dataset to potentioally classify the underlying sentiments interleaved in the images. 
 
 ## Directory Structure
 
+```
 ├── documentation/              <- All project related documentation and reports
 ├── notebooks/                  <- Jupyter notebooks
 │  ├── data_preprocessing/      <- Notebooks for cleaning the dataset
@@ -13,6 +16,7 @@
 ├── LICENSE                     <- Project's License
 ├── README.md                   <- The top-level README for developers using this project
 └── environment.yml             <- Conda environment file
+```
 
 ## Creating the environment
 Load conda environment as:
